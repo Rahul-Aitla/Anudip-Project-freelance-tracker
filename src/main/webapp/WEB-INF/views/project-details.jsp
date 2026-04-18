@@ -37,6 +37,24 @@
     </div>
 </section>
 
+<section class="card" style="margin-top: 16px;">
+    <h2 class="panel-title">Client Portal Link</h2>
+    <p>Share this read-only link with your client.</p>
+
+    <div class="form-grid">
+        <div class="field full">
+            <label for="portalLink">Share Link</label>
+            <input id="portalLink" type="text" value="${portalLink}" readonly>
+        </div>
+    </div>
+
+    <div class="actions" style="margin-top: 10px;">
+        <button class="btn secondary" type="button" onclick="copyPortalLink()">Copy Link</button>
+        <a class="btn linkish" target="_blank" rel="noopener"
+           href="${pageContext.request.contextPath}/portal/project?id=${project.id}&token=${portalToken}">Preview Portal</a>
+    </div>
+</section>
+
 <div class="grid grid-2" style="margin-top: 16px;">
     <section class="card">
         <h2 class="panel-title">Task Tracking</h2>
@@ -207,5 +225,17 @@
         </div>
     </section>
 </div>
+
+<script>
+    function copyPortalLink() {
+        const input = document.getElementById('portalLink');
+        if (!input) {
+            return;
+        }
+        input.select();
+        input.setSelectionRange(0, 99999);
+        document.execCommand('copy');
+    }
+</script>
 
 <jsp:include page="/WEB-INF/views/partials/app-footer.jsp"/>

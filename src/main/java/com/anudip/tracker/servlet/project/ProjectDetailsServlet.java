@@ -5,6 +5,7 @@ import com.anudip.tracker.dao.ProjectDao;
 import com.anudip.tracker.dao.TaskDao;
 import com.anudip.tracker.model.Project;
 import com.anudip.tracker.servlet.BaseServlet;
+import com.anudip.tracker.util.PortalLinkUtil;
 import com.anudip.tracker.util.RequestUtil;
 
 import javax.servlet.ServletException;
@@ -39,6 +40,20 @@ public class ProjectDetailsServlet extends BaseServlet {
         request.setAttribute("tasks", taskDao.findByProject(userId, projectId));
         request.setAttribute("payments", paymentDao.findByProject(userId, projectId));
 
+        String portalToken = PortalLinkUtil.generateToken(project.getId(), project.getUserId());
+        request.setAttribute("portalToken", portalToken);
+        request.setAttribute("portalLink", buildPortalLink(request, project.getId(), portalToken));
+
         request.getRequestDispatcher("/WEB-INF/views/project-details.jsp").forward(request, response);
+    }
+
+    private String buildPortalLink(HttpServletRequest request, int projectId, String token) {
+        String scheme = request.getScheme();
+        String serverName = request.getServerName();
+        int serverPort = request.getServerPort();
+        boolean defaultPort = ("http".equalsIgnoreCase(scheme) && serverPort == 80)
+                || ("https".equalsIgnoreCase(scheme) && serverPort == 443);
+        String host = defaultPort ? serverName : serverName + ":" + serverPort;
+        return scheme + "://" + host + request.getContextPath() + "/portal/project?id=" + projectId + "&token=" + token;
     }
 }

@@ -77,6 +77,24 @@ public class ProjectDao {
         return null;
     }
 
+    public Project findById(int projectId) {
+        String sql = "SELECT p.id, p.user_id, p.client_id, c.name AS client_name, p.project_name, p.description, p.start_date, p.deadline, p.status, p.progress_percent " +
+                "FROM projects p JOIN clients c ON p.client_id = c.id WHERE p.id = ?";
+
+        try (Connection connection = DBConnection.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setInt(1, projectId);
+            try (ResultSet rs = statement.executeQuery()) {
+                if (rs.next()) {
+                    return mapProject(rs);
+                }
+            }
+        } catch (SQLException ex) {
+            return null;
+        }
+        return null;
+    }
+
     public boolean create(Project project) {
         String sql = "INSERT INTO projects(user_id, client_id, project_name, description, start_date, deadline, status, progress_percent) VALUES(?, ?, ?, ?, ?, ?, ?, ?)";
         try (Connection connection = DBConnection.getConnection();
