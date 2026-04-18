@@ -4,6 +4,7 @@ import com.anudip.tracker.dao.DashboardDao;
 import com.anudip.tracker.dao.PaymentDao;
 import com.anudip.tracker.dao.ProjectDao;
 import com.anudip.tracker.model.DashboardStats;
+import com.anudip.tracker.model.Project;
 import com.anudip.tracker.servlet.BaseServlet;
 
 import javax.servlet.ServletException;
@@ -11,6 +12,7 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.List;
 
 @WebServlet("/dashboard")
 public class DashboardServlet extends BaseServlet {
@@ -23,10 +25,24 @@ public class DashboardServlet extends BaseServlet {
         int userId = getUserId(request);
 
         DashboardStats stats = dashboardDao.loadStats(userId);
+        List<Project> recentProjects = projectDao.findAllByUser(userId);
+
+        int overdueAlerts = 0;
+        int dueSoonAlerts = 0;
+        for (Project project : recentProjects) {
+            if ("overdue".equals(project.getDeadlineAlert())) {
+                overdueAlerts++;
+            } else if ("soon".equals(project.getDeadlineAlert())) {
+                dueSoonAlerts++;
+            }
+        }
 
         request.setAttribute("stats", stats);
-        request.setAttribute("recentProjects", projectDao.findAllByUser(userId));
+        request.setAttribute("recentProjects", recentProjects);
         request.setAttribute("recentPayments", paymentDao.findAllByUser(userId));
+        request.setAttribute("overdueAlerts", overdueAlerts);
+        request.setAttribute("dueSoonAlerts", dueSoonAlerts);
+        request.setAttribute("deadlineAlerts", overdueAlerts + dueSoonAlerts);
 
         request.getRequestDispatcher("/WEB-INF/views/dashboard.jsp").forward(request, response);
     }

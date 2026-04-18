@@ -90,6 +90,22 @@
 
     <section class="card">
         <h2 class="panel-title">Project Pipeline</h2>
+
+        <form method="get" action="${pageContext.request.contextPath}/projects" class="toolbar" style="margin-bottom: 12px;">
+            <input type="text" name="q" placeholder="Search by project or client" value="${searchQuery}">
+
+            <select name="statusFilter">
+                <option value="" ${empty statusFilter ? 'selected' : ''}>All Statuses</option>
+                <option value="Pending" ${statusFilter == 'Pending' ? 'selected' : ''}>Pending</option>
+                <option value="In Progress" ${statusFilter == 'In Progress' ? 'selected' : ''}>In Progress</option>
+                <option value="Completed" ${statusFilter == 'Completed' ? 'selected' : ''}>Completed</option>
+            </select>
+
+            <button class="btn secondary" type="submit">Apply</button>
+            <a class="btn secondary" href="${pageContext.request.contextPath}/projects">Reset</a>
+            <button class="btn primary" type="submit" formaction="${pageContext.request.contextPath}/projects/export" formmethod="get">Export CSV</button>
+        </form>
+
         <div class="table-wrap">
             <table>
                 <thead>
@@ -128,7 +144,24 @@
                                     </c:choose>
                                 </td>
                                 <td>${project.progressPercent}%</td>
-                                <td>${project.deadline}</td>
+                                <td>
+                                    <c:choose>
+                                        <c:when test="${empty project.deadline}">-</c:when>
+                                        <c:otherwise>${project.deadline}</c:otherwise>
+                                    </c:choose>
+                                    <c:if test="${not empty project.deadlineAlert}">
+                                        <div style="margin-top: 6px;">
+                                            <c:choose>
+                                                <c:when test="${project.deadlineAlert == 'overdue'}">
+                                                    <span class="badge overdue">${project.deadlineAlertLabel}</span>
+                                                </c:when>
+                                                <c:otherwise>
+                                                    <span class="badge soon">${project.deadlineAlertLabel}</span>
+                                                </c:otherwise>
+                                            </c:choose>
+                                        </div>
+                                    </c:if>
+                                </td>
                                 <td>
                                     <div class="actions">
                                         <a class="btn linkish" href="${pageContext.request.contextPath}/projects/details?id=${project.id}">Details</a>

@@ -215,6 +215,30 @@ th {
     border-color: #ffd3ad;
 }
 
+.badge.overdue {
+    background: #fff1ef;
+    color: #8c2317;
+    border-color: #f3c1ba;
+}
+
+.badge.soon {
+    background: #fff7dc;
+    color: #8a5e08;
+    border-color: #f2d88f;
+}
+
+.toolbar {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.toolbar input,
+.toolbar select {
+    min-width: 180px;
+}
+
 .form-grid {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -355,6 +379,12 @@ textarea:focus {
     background: #fff2f0;
     border: 1px solid #f8c7c1;
     color: #8b2b20;
+}
+
+.alert.info {
+    background: #eaf6f8;
+    border: 1px solid #c5e4e8;
+    color: #1f4d54;
 }
 
 .progress-wrap {

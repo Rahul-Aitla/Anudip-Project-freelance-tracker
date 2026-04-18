@@ -1,6 +1,8 @@
 package com.anudip.tracker.model;
 
 import java.sql.Date;
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 
 public class Project {
     private int id;
@@ -92,5 +94,45 @@ public class Project {
 
     public void setProgressPercent(int progressPercent) {
         this.progressPercent = progressPercent;
+    }
+
+    public Integer getDaysToDeadline() {
+        if (deadline == null || "Completed".equals(status)) {
+            return null;
+        }
+        LocalDate today = LocalDate.now();
+        LocalDate deadlineDate = deadline.toLocalDate();
+        return (int) ChronoUnit.DAYS.between(today, deadlineDate);
+    }
+
+    public String getDeadlineAlert() {
+        Integer daysToDeadline = getDaysToDeadline();
+        if (daysToDeadline == null) {
+            return "";
+        }
+        if (daysToDeadline < 0) {
+            return "overdue";
+        }
+        if (daysToDeadline <= 7) {
+            return "soon";
+        }
+        return "";
+    }
+
+    public String getDeadlineAlertLabel() {
+        Integer daysToDeadline = getDaysToDeadline();
+        if (daysToDeadline == null) {
+            return "";
+        }
+        if (daysToDeadline < 0) {
+            return "Overdue";
+        }
+        if (daysToDeadline == 0) {
+            return "Due Today";
+        }
+        if (daysToDeadline <= 7) {
+            return "Due in " + daysToDeadline + " day" + (daysToDeadline == 1 ? "" : "s");
+        }
+        return "";
     }
 }

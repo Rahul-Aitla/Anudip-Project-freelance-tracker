@@ -20,8 +20,13 @@ public class ProjectListServlet extends BaseServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         int userId = getUserId(request);
-        request.setAttribute("projects", projectDao.findAllByUser(userId));
+        String searchQuery = trim(request.getParameter("q"));
+        String statusFilter = trim(request.getParameter("statusFilter"));
+
+        request.setAttribute("projects", projectDao.findByUserWithFilters(userId, searchQuery, statusFilter));
         request.setAttribute("clients", clientDao.findAllByUser(userId));
+        request.setAttribute("searchQuery", searchQuery);
+        request.setAttribute("statusFilter", statusFilter);
 
         int editId = RequestUtil.parseInt(request.getParameter("editId"), -1);
         if (editId > 0) {

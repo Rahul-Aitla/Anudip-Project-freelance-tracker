@@ -28,6 +28,24 @@
 <div class="grid grid-2" style="margin-top: 16px;">
     <section class="card">
         <h2 class="panel-title">Upcoming & Active Projects</h2>
+
+        <c:choose>
+            <c:when test="${deadlineAlerts > 0}">
+                <div class="alert info" style="margin-bottom: 12px;">
+                    Deadline alerts: ${deadlineAlerts}
+                    <c:if test="${overdueAlerts > 0}">
+                        <span class="badge overdue" style="margin-left: 6px;">Overdue ${overdueAlerts}</span>
+                    </c:if>
+                    <c:if test="${dueSoonAlerts > 0}">
+                        <span class="badge soon" style="margin-left: 6px;">Due Soon ${dueSoonAlerts}</span>
+                    </c:if>
+                </div>
+            </c:when>
+            <c:otherwise>
+                <div class="alert info" style="margin-bottom: 12px;">No deadline alerts right now.</div>
+            </c:otherwise>
+        </c:choose>
+
         <div class="table-wrap">
             <table>
                 <thead>
@@ -68,7 +86,21 @@
                                 <td>
                                     <c:choose>
                                         <c:when test="${empty project.deadline}">-</c:when>
-                                        <c:otherwise>${project.deadline}</c:otherwise>
+                                        <c:otherwise>
+                                            ${project.deadline}
+                                            <c:if test="${not empty project.deadlineAlert}">
+                                                <div style="margin-top: 6px;">
+                                                    <c:choose>
+                                                        <c:when test="${project.deadlineAlert == 'overdue'}">
+                                                            <span class="badge overdue">${project.deadlineAlertLabel}</span>
+                                                        </c:when>
+                                                        <c:otherwise>
+                                                            <span class="badge soon">${project.deadlineAlertLabel}</span>
+                                                        </c:otherwise>
+                                                    </c:choose>
+                                                </div>
+                                            </c:if>
+                                        </c:otherwise>
                                     </c:choose>
                                 </td>
                             </tr>

@@ -11,14 +11,41 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ProjectDao {
+    private static final String BASE_PROJECT_SELECT =
+            "SELECT p.id, p.user_id, p.client_id, c.name AS client_name, p.project_name, p.description, p.start_date, p.deadline, p.status, p.progress_percent " +
+                    "FROM projects p JOIN clients c ON p.client_id = c.id WHERE p.user_id = ?";
+
     public List<Project> findAllByUser(int userId) {
+        return findByUserWithFilters(userId, "", "");
+    }
+
+    public List<Project> findByUserWithFilters(int userId, String query, String statusFilter) {
         List<Project> projects = new ArrayList<>();
-        String sql = "SELECT p.id, p.user_id, p.client_id, c.name AS client_name, p.project_name, p.description, p.start_date, p.deadline, p.status, p.progress_percent " +
-                "FROM projects p JOIN clients c ON p.client_id = c.id WHERE p.user_id = ? ORDER BY p.deadline IS NULL, p.deadline ASC";
+        String searchQuery = query == null ? "" : query.trim().toLowerCase();
+        String status = normalizeStatus(statusFilter);
+
+        StringBuilder sql = new StringBuilder(BASE_PROJECT_SELECT);
+        if (!searchQuery.isEmpty()) {
+            sql.append(" AND (LOWER(p.project_name) LIKE ? OR LOWER(c.name) LIKE ?)");
+        }
+        if (!status.isEmpty()) {
+            sql.append(" AND p.status = ?");
+        }
+        sql.append(" ORDER BY p.deadline IS NULL, p.deadline ASC");
 
         try (Connection connection = DBConnection.getConnection();
-             PreparedStatement statement = connection.prepareStatement(sql)) {
-            statement.setInt(1, userId);
+             PreparedStatement statement = connection.prepareStatement(sql.toString())) {
+            int index = 1;
+            statement.setInt(index++, userId);
+            if (!searchQuery.isEmpty()) {
+                String likeValue = "%" + searchQuery + "%";
+                statement.setString(index++, likeValue);
+                statement.setString(index++, likeValue);
+            }
+            if (!status.isEmpty()) {
+                statement.setString(index, status);
+            }
+
             try (ResultSet rs = statement.executeQuery()) {
                 while (rs.next()) {
                     projects.add(mapProject(rs));
@@ -27,12 +54,13 @@ public class ProjectDao {
         } catch (SQLException ex) {
             return projects;
         }
+
         return projects;
     }
 
     public Project findByIdAndUser(int projectId, int userId) {
         String sql = "SELECT p.id, p.user_id, p.client_id, c.name AS client_name, p.project_name, p.description, p.start_date, p.deadline, p.status, p.progress_percent " +
-                "FROM projects p JOIN clients c ON p.client_id = c.id WHERE p.id = ? AND p.user_id = ?";
+            "FROM projects p JOIN clients c ON p.client_id = c.id WHERE p.id = ? AND p.user_id = ?";
 
         try (Connection connection = DBConnection.getConnection();
              PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -112,5 +140,12 @@ public class ProjectDao {
         project.setStatus(rs.getString("status"));
         project.setProgressPercent(rs.getInt("progress_percent"));
         return project;
+    }
+
+    private String normalizeStatus(String status) {
+        if ("Pending".equals(status) || "In Progress".equals(status) || "Completed".equals(status)) {
+            return status;
+        }
+        return "";
     }
 }
